@@ -1,0 +1,102 @@
+# EBay---
+title: "Ebay Case Solution"
+author: "Yecheng Li, Vera Wang"
+date: "October 28, 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+library(rmarkdown)
+library(ggplot2)
+library(lubridate)
+knitr::opts_chunk$set(echo = TRUE)
+options(width=80)
+
+```
+
+First, I load the dataset and perform some basic cleaning, to keep only relevant rows and columns
+
+```{r}
+eBay = read.csv("eBayData.csv")  ### Or load your file here
+```
+
+
+
+### a) Data Processing
+
+```{r}
+# Create a new column called "rDate", which converts the "date" column into the "date" datatype.
+eBay$date = as.character(eBay$date)
+eBay$rDate = eBay$date
+eBay$rDate = as.Date(eBay$date, "%m/%d/%Y")
+class(eBay$rDate)
+```
+
+### b) Determine the date that started the treatment period.
+During this period, the control groups have search ads throughout the period while the treatment group are not shown search ads effects. The earlist date of the treatment is the when the 1 first appears in the column "isTreatmentPeriod", which is 5/22/2012 in this case. The maximum date in this case is 07/22/2012, meaning that the treatment period lasts for two months.
+```{r}
+earlistDateOfTreatment= min(eBay[eBay$isTreatmentPeriod == 1, ]$rDate)
+earlistDateOfTreatment
+
+LastDateOfTreatment= max(eBay[eBay$isTreatmentPeriod == 1, ]$rDate)
+LastDateOfTreatment
+```
+
+c)i) Run a regression that compares log(revenue) of the treatment group in the pre-treatment period and in the treatment period.
+
+```{r}
+PreTreatment_lm = lm(log(revenue)~isTreatmentPeriod,data=eBay[eBay$isTreatmentGroup == 1, ])
+summary(PreTreatment_lm)
+
+```
+c)ii) 
+
+
+
+### d) Randomization
+i) Regression model for randomization
+```{r}
+Randomization_lm = lm(log(revenue)~isTreatmentGroup, data = eBay[eBay$isTreatmentPeriod==0, ])
+summary(Randomization_lm)
+```
+
+
+ii) The purpose of randomization is to eliminate bias and make sure the sample is representative of the entire population. If the randomization is perfect, the coefficient should be 0, meaning that the coefficient is statistically insignificant. The Treatment Group is randomly selected. If the the coefficient of the regression is statistically significant, it shows that there exist natural factor that make the reveunes for the control group and treatment group different. It would impact our later analysis if this coefficiant is statistically significant.
+
+In the regression model we just run, the coefficient of isTreatmentPeriod is statistically insignificant.The p-value is larger than the significant confidence level, which means that we fail to reject the null hypothesis. There is no revenue difference between control group and treatment group. The randomization is valid.
+
+
+### e) Now, using the post treatment data, determine the effectiveness of eBay ads.
+Run a regression with log(revenue) as the dependent variable, and whether the DMA is in the treatment group as the independent variable.
+
+```{r}
+EffectivenessTest_lm = lm(log(revenue)~isTreatmentGroup, data = eBay[eBay$isTreatmentPeriod==1, ])
+summary(EffectivenessTest_lm)
+```
+
+
+```{r}
+#test
+Test_lm = lm(log(revenue)~isTreatmentPeriod, data = eBay[eBay$isTreatmentGroup==0, ])
+summary(Test_lm)
+```
+
+
+### f) Check whether the effectiveness of eBay advertising changes over time. Create a new variable called month, which contains a factor variable of the month that the date falls in.
+```{r}
+eBay$monthLevel = month(as.POSIXlt(eBay$rDate))
+monthRevenue_lm = lm(log(revenue)~isTreatmentGroup*factor(monthLevel), data = eBay[eBay$isTreatmentPeriod==1, ])
+summary(monthRevenue_lm)
+```
+
+### g) log(revenue) VS Revenue
+Using log revenue is good for analyzing percentage changes. It can be used comparably with other firms within the industry. The direct revenue change might somehow be misleading because the model should be modified every time the data set changes. However, by using the percentage, this effect would be minimized.
+
+
+```{r}
+GeneralRevenueRegressionModel = lm(log(revenue)~isTreatmentGroup + isTreatmentPeriod + isTreatmentGroup*isTreatmentPeriod,data = eBay)
+summary(GeneralRevenueRegressionModel)
+```
+
