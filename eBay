@@ -82,7 +82,7 @@ The estimated Beta value of the "isTreatmentGroup" variable is -0.0075. It means
 
 ### iii)What was the purpose of the control group here? What factor was unaccounted for in part c, but was accounted for in part e?
 
-The purpose of the control group is to compare the ad effictiveness between the control and treatment group
+The purpose of the control group is to compare the ad effictiveness between the control and treatment group. In part c), the regression only compare the 
 ```{r}
 #test
 Test_lm = lm(log(revenue)~isTreatmentPeriod, data = eBay[eBay$isTreatmentGroup==0, ])
