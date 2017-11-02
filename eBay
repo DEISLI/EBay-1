@@ -69,14 +69,20 @@ In the regression model we just run, the coefficient of isTreatmentPeriod is sta
 
 
 ### e) Now, using the post treatment data, determine the effectiveness of eBay ads.
-Run a regression with log(revenue) as the dependent variable, and whether the DMA is in the treatment group as the independent variable.
+### i)Run a regression with log(revenue) as the dependent variable, and whether the DMA is in the treatment group as the independent variable.
 
 ```{r}
 EffectivenessTest_lm = lm(log(revenue)~isTreatmentGroup, data = eBay[eBay$isTreatmentPeriod==1, ])
 summary(EffectivenessTest_lm)
 ```
 
+### ii)What do the resulting coefficient estimates say about the effectiveness of advertising?
 
+The estimated Beta value of the "isTreatmentGroup" variable is -0.0075. It means that the average revenue in the treatment group is 0.0075% smaller than the average revenue in the control group. However, the Beta is statistically insignificant as the P-value 0.741>0.1 and there is no star. Therefore, the randomly assigned control and treatment group do not affect the reveune is the post treatment period. 
+
+### iii)What was the purpose of the control group here? What factor was unaccounted for in part c, but was accounted for in part e?
+
+The purpose of the control group is to compare the ad effictiveness between the control and treatment group
 ```{r}
 #test
 Test_lm = lm(log(revenue)~isTreatmentPeriod, data = eBay[eBay$isTreatmentGroup==0, ])
