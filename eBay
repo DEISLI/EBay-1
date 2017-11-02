@@ -19,8 +19,7 @@ options(width=80)
 First, I load the dataset and perform some basic cleaning, to keep only relevant rows and columns
 
 ```{r}
-### load your the dataset
-eBay = read.csv("eBayData.csv") 
+eBay = read.csv("eBayData.csv")  ### Or load your file here
 ```
 
 
@@ -38,11 +37,9 @@ class(eBay$rDate)
 ### b) Determine the date that started the treatment period.
 During this period, the control groups have search ads throughout the period while the treatment group are not shown search ads effects. The earlist date of the treatment is the when the 1 first appears in the column "isTreatmentPeriod", which is 5/22/2012 in this case. The maximum date in this case is 07/22/2012, meaning that the treatment period lasts for two months.
 ```{r}
-### Extract a subset of the treatment group and use minimum to get the earliest date of the treatment
-earliestDateOfTreatment= min(eBay[eBay$isTreatmentPeriod == 1, ]$rDate)
-earliestDateOfTreatment
+earlistDateOfTreatment= min(eBay[eBay$isTreatmentPeriod == 1, ]$rDate)
+earlistDateOfTreatment
 
-### Extract a subset of the treatment group and use maximum to get the lastest date of the treatment
 LastDateOfTreatment= max(eBay[eBay$isTreatmentPeriod == 1, ]$rDate)
 LastDateOfTreatment
 ```
@@ -72,18 +69,26 @@ In the regression model we just run, the coefficient of isTreatmentPeriod is sta
 
 
 ### e) Now, using the post treatment data, determine the effectiveness of eBay ads.
-Run a regression with log(revenue) as the dependent variable, and whether the DMA is in the treatment group as the independent variable.
+### i)Run a regression with log(revenue) as the dependent variable, and whether the DMA is in the treatment group as the independent variable.
 
 ```{r}
-### The regression with log(Revenue) and control/treatment group
 EffectivenessTest_lm = lm(log(revenue)~isTreatmentGroup, data = eBay[eBay$isTreatmentPeriod==1, ])
 summary(EffectivenessTest_lm)
+```
+
+### ii)What do the resulting coefficient estimates say about the effectiveness of advertising?
+###   
+
+
+```{r}
+#test
+Test_lm = lm(log(revenue)~isTreatmentPeriod, data = eBay[eBay$isTreatmentGroup==0, ])
+summary(Test_lm)
 ```
 
 
 ### f) Check whether the effectiveness of eBay advertising changes over time. Create a new variable called month, which contains a factor variable of the month that the date falls in.
 ```{r}
-### Extract the month level and run a regression
 eBay$monthLevel = month(as.POSIXlt(eBay$rDate))
 monthRevenue_lm = lm(log(revenue)~isTreatmentGroup*factor(monthLevel), data = eBay[eBay$isTreatmentPeriod==1, ])
 summary(monthRevenue_lm)
